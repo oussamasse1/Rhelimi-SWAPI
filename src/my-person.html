@@ -1,0 +1,114 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="my-person">
+    <!-- Defines the element's style and local DOM -->
+    <template>
+        <style>
+             :host {
+                display: block;
+                padding: 16px;
+            }
+
+            paper-button.green {
+                background-color: var(--paper-green-500);
+                color: white;
+            }
+
+            paper-button.green[active] {
+                background-color: var(--paper-red-500);
+            }
+        </style>
+
+        <iron-ajax auto url="https://swapi.co/api/people/{{selectedid}}" handle-as="json" on-response="getPerson">
+        </iron-ajax>
+
+        <template is="dom-if" if="[[isPersonShowed]]">
+            <h3>Active</h3>
+            <template is="dom-repeat" items="{{listIdFilm}}" as="idFilm">
+                <iron-ajax auto url="https://swapi.co/api/films/{{idFilm}}" handle-as="json" on-response="getFilm">
+                </iron-ajax>
+            </template>
+        </template>
+
+
+        <h1>Detail de {{person.name}}</h1>
+
+        <div>
+            <p><strong>Nom : {{person.name}}</strong></p>
+            <p><strong>Genre : {{person.gender}}</strong></p>
+            <p><strong>Couleur des cheuveux : {{person.hair_color}}</strong></p>
+            <p><strong>Couleur de la peau : {{person.skin_color}}</strong></p>
+            <p><strong>Couleur des yeux : {{person.eye_color}}</strong></p>
+
+            <h2>Film List:</h2>
+            <template is="dom-repeat" items="{{listFilm}}" as="film">
+                <p>
+                    <paper-button toggles raised class="green" on-click="afficherDetail">Détail</paper-button>
+                    <strong>{{film.title}}</strong>
+                </p>
+            </template>
+        </div>
+    </template>
+    <script>
+        // Your new element extends the Polymer.Element base class
+        class MyPerson extends Polymer.Element {
+            static get is() { return 'my-person'; }
+
+            constructor() {
+                super();
+                this.isPersonShowed = false;
+                this.filmNbr = 0;
+                this.listFilm = [];
+                this.listIdFilm = [];
+                this.listUrlFilm = [];
+
+                this.cpt = 0;
+            }
+
+
+            getPerson(res) {
+                this.person = res.detail.response;
+                this.listUrlFilm = res.detail.response.films;
+                this.listUrlFilm.forEach(function (element) {
+                    let temp = element.substr(element.lastIndexOf('films/') + 6);
+                    let id = temp.substr(0, temp.length - 1);
+                    this.listIdFilm.push(id);
+                }, this);
+
+                this.set('listIdFilm', this.listIdFilm.slice());
+                this.filmNbr = this.listIdFilm.length;
+
+                this.listFilm = [];
+                this.isPersonShowed = true;
+            }
+
+            getFilm(res) {
+                this.cpt++;
+                let film = res.detail.response;
+                this.listFilm.push(film);
+
+
+
+                if (this.filmNbr == this.cpt) {
+                    this.set('listFilm', this.listFilm.slice());
+                    console.log(this.listFilm);
+                }
+
+            }
+
+            afficherDetail(oEvent) {
+                let film = oEvent.model.get('film');
+                let temp = film.url.substr(film.url.lastIndexOf('films/') + 6);
+                let id = temp.substr(0, temp.length - 1);
+                //console.log(id)
+                //let ur = "/films/"+id;
+                window.history.pushState({}, null, '/film/' + id);
+                window.dispatchEvent(new CustomEvent('location-changed'));
+                //window.location.href = film.url;
+            }
+        }
+        //Now, register your new custom element so the browser can use it
+        customElements.define(MyPerson.is, MyPerson);
+    </script>
+</dom-module>

@@ -1,0 +1,144 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+<dom-module id="my-people">
+    <!-- Defines the element's style and local DOM -->
+    <template>
+        <style>
+             :host {
+                display: block;
+
+                padding: 16px;
+            }
+
+            paper-button.green {
+                background-color: var(--paper-green-500);
+                color: white;
+            }
+
+            paper-button.green[active] {
+                background-color: var(--paper-red-500);
+            }
+        </style>
+
+        <!-- Iron Ajax For People  -->
+
+        <template is="dom-repeat" items="{{pageArray}}" as="nbrPage">
+            <iron-ajax auto url="https://swapi.co/api/people?page={{nbrPage}}" handle-as="json" on-response="onResponsePeople">
+            </iron-ajax>
+        </template>
+
+        <!-- <template is="dom-repeat" items="{{pageArray}}" as="nbrPage">
+            <iron-ajax auto url="https://jsonplaceholder.typicode.com/users" handle-as="json" on-response="onResponsePeople">
+            </iron-ajax>
+        </template> -->
+
+
+        <template is="dom-if" if="[[!isTextEmpty]]">
+            <h3>dddd</h3>
+            <iron-ajax auto url="https://swapi.co/api/people/?search={{text}}" handle-as="json" on-response="findPeople">
+            </iron-ajax>
+        </template>
+
+
+        <paper-input always-float-label label="Recherche Person" on-input="textChange" value="{{text}}"></paper-input>
+
+
+        <h1>People List</h1>
+
+        <!-- People to integrate -->
+        <template is="dom-repeat" items="{{listPeople}}" as="person">
+            <paper-button toggles raised class="green" on-click="afficherDetail">Détail</paper-button>
+            <strong>[[person.name]]</strong>
+            <br>
+            <br>
+        </template>
+    </template>
+    <script>
+        // Your new element extends the Polymer.Element base class
+        class MyPeople extends Polymer.Element {
+            static get is() { return 'my-people'; }
+
+
+            constructor() {
+                super();
+                this.listPeople = [];
+                this.pageN = 9;
+                this.text = "";
+                this.isTextEmpty = true;
+                this.pageArray = [];
+
+                for (let i = 1; i <= this.pageN; i++)
+                    this.pageArray.push(i);
+
+                this.cpt = 0;
+            }
+
+            onResponsePeople(res) {
+                this.cpt++;
+
+                res.detail.response.results.forEach(function (element) {
+                    this.listPeople.push(element);
+                }, this);
+
+
+
+                if (this.pageN == 9) {
+                    console.log(this.listPeople);
+                    this.set('listPeople', this.listPeople.slice());
+                }
+
+
+            }
+
+            afficherDetail(oEvent) {
+                let person = oEvent.model.get('person');
+                let temp = person.url.substr(person.url.lastIndexOf('people/') + 7);
+                let id = temp.substr(0, temp.length - 1);
+                console.log(id);
+                window.history.pushState({}, null, '/person/' + id);
+                window.dispatchEvent(new CustomEvent('location-changed'));
+            }
+
+            textChange() {
+                if (this.text == "")
+                    this.isTextEmpty = true;
+                else
+                    this.isTextEmpty = false;
+                console.log(this.text);
+            }
+
+            findPeople(res) {
+                if (this.text == "") {
+                    this.cpt++;
+
+                    res.detail.response.results.forEach(function (element) {
+                        this.listPeople.push(element);
+                    }, this);
+
+
+
+                    if (this.pageN == 9) {
+                        console.log(this.listPeople);
+                        this.set('listPeople', this.listPeople.slice());
+                    }
+
+                }
+
+
+                this.listPeople = [];
+                res.detail.response.results.forEach(function (element) {
+                    this.listPeople.push(element);
+                    console.log(element);
+                }, this);
+                this.set('listPeople', this.listPeople.slice());
+            }
+
+        }
+        //Now, register your new custom element so the browser can use it
+        customElements.define(MyPeople.is, MyPeople);
+    </script>
+</dom-module>

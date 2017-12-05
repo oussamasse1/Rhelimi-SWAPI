@@ -1,0 +1,114 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="my-film">
+    <!-- Defines the element's style and local DOM -->
+    <template>
+        <style>
+             :host {
+                display: block;
+                padding: 16px;
+            }
+
+            paper-button.green {
+                background-color: var(--paper-green-500);
+                color: white;
+            }
+
+            paper-button.green[active] {
+                background-color: var(--paper-red-500);
+            }
+        </style>
+
+        <iron-ajax auto url="https://swapi.co/api/films/{{selectedid}}" handle-as="json" on-response="getFilm">
+        </iron-ajax>
+
+        <template is="dom-if" if="[[isFilmShowed]]">
+            <h3>Active</h3>
+            <template is="dom-repeat" items="{{listIdPerson}}" as="idPerson">
+                <iron-ajax auto url="https://swapi.co/api/people/{{idPerson}}" handle-as="json" on-response="getPerson">
+                </iron-ajax>
+            </template>
+        </template>
+
+
+        <h1>Detail de {{film.title}}</h1>
+
+        <div>
+            <p><strong>Titre : {{film.title}}</strong></p>
+            <p><strong>Episode : {{film.episode_id}}</strong></p>
+            <p><strong>Directeur : {{film.director}}</strong></p>
+            <p><strong>Producteur : {{film.producer}}</strong></p>
+            <p><strong>Date de Sortie : {{film.release_date}}</strong></p>
+
+            <h2>Characters List:</h2>
+            <template is="dom-repeat" items="{{listPerson}}" as="person">
+                <p>
+                    <paper-button toggles raised class="green" on-click="afficherDetail">Détail</paper-button>
+                    <strong>{{person.name}}</strong>
+                </p>
+            </template>
+        </div>
+    </template>
+    <script>
+        // Your new element extends the Polymer.Element base class
+        class MyFilm extends Polymer.Element {
+            static get is() { return 'my-film'; }
+
+            constructor() {
+                super();
+                this.isFilmShowed = false;
+                this.personNbr = 0;
+                this.listPerson = [];
+                this.listIdPerson = [];
+                this.listUrlPerson = [];
+
+                this.cpt = 0;
+            }
+
+
+            getFilm(res) {
+                this.film = res.detail.response;
+                this.listUrlPerson = res.detail.response.characters;
+                this.listUrlPerson.forEach(function (element) {
+                    let temp = element.substr(element.lastIndexOf('people/') + 7);
+                    let id = temp.substr(0, temp.length - 1);
+                    this.listIdPerson.push(id);
+                }, this);
+
+                this.set('listIdPerson', this.listIdPerson.slice());
+                this.personNbr = this.listIdPerson.length;
+
+                this.listPerson = [];
+                this.isFilmShowed = true;
+            }
+
+            getPerson(res) {
+                this.cpt++;
+                let person = res.detail.response;
+                this.listPerson.push(person);
+
+
+
+                if (this.personNbr == this.cpt) {
+                    this.set('listPerson', this.listPerson.slice());
+                    console.log(this.listPerson);
+                }
+
+            }
+
+            afficherDetail(oEvent) {
+                let person = oEvent.model.get('person');
+                let temp = person.url.substr(person.url.lastIndexOf('people/') + 7);
+                let id = temp.substr(0, temp.length - 1);
+                //console.log(id)
+                //let ur = "/people/"+id;
+                window.history.pushState({}, null, '/person/' + id);
+                window.dispatchEvent(new CustomEvent('location-changed'));
+                //window.location.href = people.url;
+            }
+        }
+        //Now, register your new custom element so the browser can use it
+        customElements.define(MyFilm.is, MyFilm);
+    </script>
+</dom-module>
