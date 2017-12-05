@@ -1,4 +1,5 @@
-J'ai fait que 2 vue car c'est le meme principe pour la 3 éme (homeworld : planete) 
-il suffit d'ajouter iron-ajax pour planete à my-films et my-people avec boutton (et styler un peu
+After All : Bower insall; // for adding bower_components
+J'ai fait que 2 vue car c'est le meme principe pour la 3 Ã©me (homeworld : planete) 
+il suffit d'ajouter iron-ajax pour planete Ã  my-films et my-people avec boutton (et styler un peu
 l'affichage sur 2 colonnes), ensuite on ajoute 2 vue my-planete et my-planetes et faire la meme chose
-le principe c'est se diriger d'une page à une autre à l'aide de on-click
+le principe c'est se diriger d'une page Ã  une autre Ã  l'aide de on-click
