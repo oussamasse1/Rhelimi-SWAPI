@@ -1,4 +1,4 @@
-After All : Bower insall; // for adding bower_components
+Before All : Bower insall; // for adding bower_components
 J'ai fait que 2 vue car c'est le meme principe pour la 3 éme (homeworld : planete) 
 il suffit d'ajouter iron-ajax pour planete à my-films et my-people avec boutton (et styler un peu
 l'affichage sur 2 colonnes), ensuite on ajoute 2 vue my-planete et my-planetes et faire la meme chose
